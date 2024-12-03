@@ -7,6 +7,7 @@ export default function LoadMoreButton() {
     const [loading, setLoading] = useState(false);
     const [products, setProducts] = useState([]);
     const [count, setCount] = useState(0);
+    const [disableButton, setDisableButton] = useState(false);
 
     async function fetchProducts() {
         try {
@@ -17,7 +18,7 @@ export default function LoadMoreButton() {
             const result = await response.json();
             console.log(products);
             if (result && result.products && result.products.length) {
-                setProducts(result.products)
+                setProducts((prevData) => [...prevData, ...result.products])
                 setLoading(false)
             }
         } catch (e) {
@@ -27,7 +28,11 @@ export default function LoadMoreButton() {
     }
     useEffect(() => {
         fetchProducts()
-    }, []);
+    }, [count]);
+
+    useEffect(() => {
+        if (products && products.length === 100) setDisableButton(true)
+    }, [products])
 
     if (loading) {
         return <diV>loading data ! please wait</diV>
@@ -40,8 +45,8 @@ export default function LoadMoreButton() {
                         ? products.map((item) =>
                             <div key={item.id} className="product">
                                 <img
-                                src={item.thumbnail}
-                                alt={item.title}
+                                    src={item.thumbnail}
+                                    alt={item.title}
                                 />
                             </div>
                         )
@@ -49,7 +54,11 @@ export default function LoadMoreButton() {
                 }
             </div>
             <div>
-                <button className="button-container">loading more Product</button>
+                <button disabled={disableButton} className="button-container"
+                    onClick={() => setCount(count + 1)}>loading more Product</button>
+                    {
+                        disableButton ? <p>you have reached to 100 products</p> : null
+                    }
             </div>
         </div>
     );
